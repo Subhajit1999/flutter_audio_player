@@ -1,4 +1,4 @@
 class Strings {
 
-  static const String appName = "Musiqal";
+  static const String appName = "AirWave";
 }

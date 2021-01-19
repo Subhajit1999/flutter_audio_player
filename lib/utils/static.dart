@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider_ex/path_provider_ex.dart';
 
-class Constants {
+class Statics {
 
   static const List<MaterialColor> ColorsList = [Colors.green,
     Colors.orange,
@@ -13,4 +14,6 @@ class Constants {
     Colors.amber,
     Colors.grey
   ];
+
+  static List<StorageInfo> availableStorage = [];
 }

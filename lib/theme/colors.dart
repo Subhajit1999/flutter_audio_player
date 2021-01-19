@@ -10,5 +10,7 @@ class AppColors {
   static const backgroundColor = Color(0xFFFFFFFF);
 
   // Custom colors
-  // static const textFieldBackgroundColor = Color(0xFFF3F6E5);
+  static const activeTabIndicatorColor = Color(0xFF4FB9E1);
+  static const inactiveTabIndicatorColor = Color(0xFFE7F6FB);
+  static const smallMetaColor = Color(0xFF839CB9);
 }

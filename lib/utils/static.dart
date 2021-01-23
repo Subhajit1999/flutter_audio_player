@@ -3,17 +3,19 @@ import 'package:path_provider_ex/path_provider_ex.dart';
 
 class Statics {
 
-  static const List<MaterialColor> ColorsList = [Colors.green,
-    Colors.orange,
-    Colors.blue,
-    Colors.deepPurple,
-    Colors.cyan,
-    Colors.blueGrey,
-    Colors.red,
-    Colors.pink,
-    Colors.amber,
-    Colors.grey
+  static List<MaterialAccentColor> ColorsList = [
+    Colors.lightBlueAccent,
+    Colors.blueAccent,
+    Colors.indigoAccent,
+    Colors.greenAccent,
+    Colors.amberAccent,
+    Colors.orangeAccent,
+    Colors.deepOrangeAccent,
+    Colors.redAccent,
+    Colors.purpleAccent,
+    Colors.deepPurpleAccent,
   ];
 
   static List<StorageInfo> availableStorage = [];
+  static PersistentBottomSheetController controller;
 }

@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_audio_player/configs/menu_config.dart';
 import 'package:flutter_audio_player/configs/size_config.dart';
 import 'package:flutter_audio_player/models/storage_file_system.dart';
+import 'package:flutter_audio_player/screens/audio_list/ui/widgets/player_fullscreen_sheet.dart';
+import 'package:flutter_audio_player/screens/audio_list/ui/widgets/player_tray_sheet.dart';
+import 'package:flutter_audio_player/shared/circular_image.dart';
 import 'package:flutter_audio_player/theme/colors.dart';
+import 'package:flutter_audio_player/utils/media.dart';
+import 'package:flutter_audio_player/utils/static.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:media_metadata_plugin/media_media_data.dart';
 import 'package:media_metadata_plugin/media_metadata_plugin.dart';
@@ -19,6 +24,7 @@ class FileListItem extends StatefulWidget {
 class _FileListItemState extends State<FileListItem> {
   String fileName, album, artist, timeStamp;
   int durationMin, durationSec;
+  Widget playerWidget;
 
   @override
   void initState() {
@@ -30,7 +36,7 @@ class _FileListItemState extends State<FileListItem> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () => openPlayerTray(),
       child: Container(
         padding: EdgeInsets.only(left: 4.4 * SizeConfig.widthMultiplier, top: 1.25 * SizeConfig.heightMultiplier,
             bottom: 1.25 * SizeConfig.heightMultiplier),
@@ -67,18 +73,7 @@ class _FileListItemState extends State<FileListItem> {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        Container(
-          width: 7 * SizeConfig.heightMultiplier,
-          height: 7 * SizeConfig.heightMultiplier,
-          decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.5, style: BorderStyle.solid),
-              image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: AssetImage('assets/images/song.jpg')
-              )
-          ),
-        ),
+        CircularImageView(AssetMedia.temp, 7 * SizeConfig.heightMultiplier, 1.5, Colors.white),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 1.1 * SizeConfig.widthMultiplier, vertical: 0.125 * SizeConfig.heightMultiplier),
           decoration: BoxDecoration(
@@ -94,6 +89,25 @@ class _FileListItemState extends State<FileListItem> {
         )
       ],
     );
+  }
+
+  void openPlayerTray() {
+    playerWidget = PlayerTraySheet(changePlayerView);
+    Statics.controller = showBottomSheet(
+        context: context,
+        builder: (context) => GestureDetector(
+          onVerticalDragStart: (_) {},
+            child: playerWidget
+        ));
+  }
+
+  void changePlayerView(int view) {
+    if(view == 0){
+      playerWidget = PlayerFullScreenSheet(changePlayerView);
+    }else {
+      playerWidget = PlayerTraySheet(changePlayerView);
+    }
+    Statics.controller.setState(() {});
   }
 
   Widget _popupMenu() {

@@ -19,7 +19,7 @@ class _FolderItemState extends State<FolderItem> {
   double cardWidth, cardHeight;
   final int index;
   int filesCount;
-  MaterialColor bgColor;
+  MaterialAccentColor bgColor;
   String dirName;
 
   _FolderItemState(this.index);

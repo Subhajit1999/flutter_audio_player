@@ -17,7 +17,7 @@ class StorageFileScanner {
     var fm = FileManager(root: root);
     files = await fm.filesTree(
         excludedPaths: ["$root/Android"],
-        extensions: ["mp3"]
+        extensions: ["mp3","m4a"]
     );
 
     // Getting all the files organised parent folder wise

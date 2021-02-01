@@ -1,7 +1,11 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_player/configs/size_config.dart';
+import 'package:flutter_audio_player/services/audio_player_service.dart';
+import 'package:flutter_audio_player/services/audio_state_stream.dart';
 import 'package:flutter_audio_player/shared/circular_image.dart';
+import 'package:flutter_audio_player/shared/marquee_widget.dart';
 import 'package:flutter_audio_player/shared/seekbar_widget.dart';
 import 'package:flutter_audio_player/theme/colors.dart';
 import 'package:flutter_audio_player/utils/media.dart';
@@ -18,53 +22,95 @@ class PlayerTraySheet extends StatefulWidget {
 }
 
 class _PlayerTraySheetState extends State<PlayerTraySheet> {
+  IconData playPauseIcon;
+  Duration duration;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  _getMetaData() {
+    if(AudioService.currentMediaItem!=null) {
+      Statics.metadata.getAudioMetaData(AudioService.currentMediaItem.id).then((value) {
+        setState(() {});
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _getMetaData();
+
+    return StreamBuilder<AudioState>(
+      stream: audioStateStream,
+      builder: (context, snapshot) {
+        final audioState = snapshot.data;
+        final queue = audioState?.queue;
+        final mediaItem = audioState?.mediaItem;
+        final playbackState = audioState?.playbackState;
+        final processingState =
+            Statics.playbackState?.processingState ?? AudioProcessingState.none;
+        final playing = Statics.playbackState?.playing ?? false;
+        if(playPauseIcon == null) {
+          if(playbackState.playing!=null? playbackState.playing : true) playPauseIcon = FontAwesomeIcons.solidPauseCircle;
+          else playPauseIcon = FontAwesomeIcons.solidPlayCircle;
+        }
+
+        return _body(playbackState);
+      },
+    );
+  }
+
+  Widget _body(PlaybackState playbackState) {
     return GestureDetector(
       onTap: () => widget.function(0),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 2.8 * SizeConfig.widthMultiplier, vertical: SizeConfig.heightMultiplier),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16))
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(2 * SizeConfig.heightMultiplier),
+                topRight: Radius.circular(2 * SizeConfig.heightMultiplier))
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // Close Button
-            // _closeButton(),
 
             Padding(
-              padding: EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(top: SizeConfig.heightMultiplier),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Circular cover-art
-                  CircularImageView(AssetMedia.temp, 64, 2, AppColors.secondaryColor),
+                  CircularImageView(AssetMedia.temp, 8 * SizeConfig.heightMultiplier, 2, AppColors.secondaryColor),
                   // Content area
                   Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Music info
-                        Text('Titanic theme song - unplugged cover', style: Theme.of(context).textTheme.bodyText1.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold
-                        ), maxLines: 1, overflow: TextOverflow.ellipsis,),
-                        Text('by Unknown', style: Theme.of(context).textTheme.bodyText2.copyWith(
-                          fontSize: 12,
-                        ), maxLines: 1, overflow: TextOverflow.ellipsis,),
-                        SizedBox(height: 4,),
+                        MarqueeWidget(
+                          direction: Axis.horizontal,
+                            child: Text(Statics.metadata.audioTitle, style: Theme.of(context).textTheme.bodyText1.copyWith(
+                                fontSize: 1.75 * SizeConfig.textMultiplier,
+                                fontWeight: FontWeight.bold
+                            ), maxLines: 1)),
+                        MarqueeWidget(
+                          direction: Axis.horizontal,
+                          child: Text('by ${Statics.metadata.artist}', style: Theme.of(context).textTheme.bodyText2.copyWith(
+                            fontSize: 1.5 * SizeConfig.textMultiplier,
+                          ), maxLines: 1),),
+                        SizedBox(height: 0.5 * SizeConfig.heightMultiplier,),
                         // Music playback controls
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // Playback controls
-                            _playbackButton(FontAwesomeIcons.stepBackward, 20, 0),
-                            _playbackButton(FontAwesomeIcons.solidPauseCircle, 36, 1),
-                            _playbackButton(FontAwesomeIcons.stepForward, 20, 2),
+                            _playbackButton(FontAwesomeIcons.stepBackward, 2.5 * SizeConfig.heightMultiplier, 0),
+                            _playbackButton(playPauseIcon, 4.5 * SizeConfig.heightMultiplier, 1, state: playbackState),
+                            _playbackButton(FontAwesomeIcons.stepForward, 2.5 * SizeConfig.heightMultiplier, 2),
                           ],
                         )
                       ],
@@ -73,8 +119,9 @@ class _PlayerTraySheetState extends State<PlayerTraySheet> {
                 ],
               ),
             ),
+
             // SeekBar control
-            SeekbarWidget(SizeConfig.screenWidth),
+            SeekbarWidget(false, playbackState: playbackState, duration: Statics.metadata.duration),
           ],
         ),
       ),
@@ -90,17 +137,38 @@ class _PlayerTraySheetState extends State<PlayerTraySheet> {
         }
       },
       child: Icon(
-        FontAwesomeIcons.times, size: 16, color: AppColors.secondaryColor,
+        FontAwesomeIcons.times, size: 2 * SizeConfig.heightMultiplier, color: AppColors.secondaryColor,
       ),
     );
   }
 
-  Widget _playbackButton(IconData icon, double size, int order) {
+  Widget _playbackButton(IconData icon, double size, int order, {PlaybackState state}) {
     return IconButton(
-      onPressed: () {},
+      onPressed: () => playbackAction(order, state: state),
       icon: Icon(
         icon, color: AppColors.secondaryColor, size: size,
       ),
     );
+  }
+
+  void playbackAction(int order, {PlaybackState state}) {
+    switch(order) {
+      case 0:
+        AudioService.skipToPrevious();
+        break;
+      case 1:  // Play/Pause
+        if(state.playing) {
+          playPauseIcon = FontAwesomeIcons.solidPlayCircle;
+          AudioService.pause();
+        }else{
+          playPauseIcon = FontAwesomeIcons.solidPauseCircle;
+          AudioService.play();
+        }
+        break;
+      case 2:
+        AudioService.skipToNext();
+        break;
+    }
+    setState(() {});
   }
 }

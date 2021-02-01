@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_player/configs/menu_config.dart';
 import 'package:flutter_audio_player/configs/size_config.dart';
@@ -31,10 +32,16 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     requestPermission();
   }
 
+  _disconnectAudioService() async {
+    // Disconnecting the AudioService
+    await AudioService.disconnect();
+  }
+
   @override
   void dispose() {
     super.dispose();
     _tabController.dispose();
+    _disconnectAudioService();
   }
 
   @override

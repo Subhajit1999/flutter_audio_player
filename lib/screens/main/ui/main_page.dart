@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_player/configs/menu_config.dart';
@@ -6,6 +8,8 @@ import 'package:flutter_audio_player/screens/main/bloc/scanner_bloc.dart';
 import 'package:flutter_audio_player/screens/main/bloc/scanner_event.dart';
 import 'package:flutter_audio_player/screens/main/bloc/scanner_state.dart';
 import 'package:flutter_audio_player/screens/main/ui/widgets/storage_tab_view.dart';
+import 'package:flutter_audio_player/services/ad_manager.dart';
+import 'package:flutter_audio_player/services/network_manager.dart';
 import 'package:flutter_audio_player/services/permissions_service.dart';
 import 'package:flutter_audio_player/shared/toolbar.dart';
 import 'package:flutter_audio_player/theme/colors.dart';
@@ -23,6 +27,8 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin{
   TabController _tabController;
   FileScannerBloc scannerBloc;
+  static AdmobBanner bannerAd;
+  bool networkConnected = false;
 
   @override
   void initState() {
@@ -30,6 +36,18 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     scannerBloc = BlocProvider.of<FileScannerBloc>(context);
     _tabController = TabController(length: 2, vsync: this);
     requestPermission();
+  }
+
+  _handleAdInit() {
+    if(bannerAd == null) {
+      NetworkManager.isNetworkConnected().then((value) {
+        networkConnected = value;
+        if(value) {
+          bannerAd = AdMobManager.buildBannerAd(Statics.bannerSize);
+          setState(() {});
+        }
+      });
+    }
   }
 
   _disconnectAudioService() async {
@@ -41,6 +59,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   void dispose() {
     super.dispose();
     _tabController.dispose();
+    bannerAd = null;
     _disconnectAudioService();
   }
 
@@ -49,11 +68,11 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     return Scaffold(
       backgroundColor: AppColors.primaryColor,
       appBar: ToolBar(Strings.appName, true, action: popupMenu(),),
-      body:  MainBody()
+      body:  mainBody()
     );
   }
 
-  Widget MainBody() {
+  Widget mainBody() {
     return Container(
         width: double.infinity,
         height: double.maxFinite,
@@ -79,6 +98,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
               bloc: scannerBloc,
               builder: (BuildContext context, FileScannerState state) {
                 if (state is FileScanSuccessState) {
+                  _handleAdInit();
                   return Expanded(
                     child: Column(
                       children: [
@@ -94,6 +114,16 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                 }
                 return Center(child: CircularProgressIndicator());
               }),
+            SizedBox(height: 2 * SizeConfig.heightMultiplier,),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: networkConnected && bannerAd!=null? Container(
+                width: double.infinity,
+                height: Statics.adContainerHeight,
+                color: AppColors.accentColor,
+                child: Center(child: bannerAd),
+              ) : SizedBox(),
+            )
           ],
         )
     );
@@ -104,7 +134,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
       icon: Icon(FontAwesomeIcons.ellipsisH, size: 5 * SizeConfig.widthMultiplier,),
       onSelected: handleClick,
       itemBuilder: (BuildContext context) {
-        return AppbarMenuConfig.appbarMenuItems.map((String choice) {
+        return AppbarMenuConfig.appbarMenuItems .map((String choice) {
           return PopupMenuItem<String>(
             value: choice,
             child: Text(choice),

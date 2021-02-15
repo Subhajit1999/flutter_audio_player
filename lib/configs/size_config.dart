@@ -1,5 +1,7 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_audio_player/utils/static.dart';
 
 class SizeConfig {
   static double screenWidth;
@@ -40,5 +42,18 @@ class SizeConfig {
 
     print(_blockWidth);
     print(_blockHeight);
+
+    // Banner Ad Size measurement
+    if(SizeConfig.screenWidth<468) {
+      Statics.bannerSize = AdmobBannerSize.BANNER;
+      Statics.adContainerHeight = 50;
+    }else if(SizeConfig.screenWidth>=468 && SizeConfig.screenWidth<728) {
+      Statics.bannerSize = AdmobBannerSize.FULL_BANNER;
+      Statics.adContainerHeight = 60;
+    }else{
+      Statics.bannerSize = AdmobBannerSize.LEADERBOARD;
+      Statics.adContainerHeight = 90;
+    }
+    Statics.adContainerHeight += 10;
   }
 }

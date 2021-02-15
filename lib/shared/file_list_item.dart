@@ -1,13 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_player/configs/menu_config.dart';
 import 'package:flutter_audio_player/configs/size_config.dart';
 import 'package:flutter_audio_player/models/storage_file_system.dart';
 import 'package:flutter_audio_player/screens/audio_list/ui/widgets/player_tray_sheet.dart';
+import 'package:flutter_audio_player/shared/audio_detail_dialog.dart';
 import 'package:flutter_audio_player/shared/circular_image.dart';
 import 'package:flutter_audio_player/theme/colors.dart';
 import 'package:flutter_audio_player/utils/audio_metadata.dart';
 import 'package:flutter_audio_player/utils/media.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:share/share.dart';
 
 class FileListItem extends StatefulWidget {
   final AudioFile file;
@@ -22,6 +25,7 @@ class FileListItem extends StatefulWidget {
 
 class _FileListItemState extends State<FileListItem> {
   String fileName, album, artist, timeStamp;
+  AudioMetadata metadata;
 
   @override
   void initState() {
@@ -95,9 +99,13 @@ class _FileListItemState extends State<FileListItem> {
   Widget _popupMenu() {
     return PopupMenuButton<String>(
       icon: Icon(FontAwesomeIcons.ellipsisV, size: 1.75 * SizeConfig.textMultiplier, color: AppColors.secondaryColor,),
-      onSelected: (value) => _popupMenuAction,
+      onSelected: (value) {
+        int index = AppbarMenuConfig.fileMenuItems.indexOf(value);
+        print('index: $index');
+        _popupMenuAction(index);
+      },
       itemBuilder: (BuildContext context) {
-        return AppbarMenuConfig.appbarMenuItems.map((String choice) {
+        return AppbarMenuConfig.fileMenuItems.map((String choice) {
           return PopupMenuItem<String>(
             value: choice,
             child: Text(choice),
@@ -108,7 +116,7 @@ class _FileListItemState extends State<FileListItem> {
   }
 
   Future<void> getAudioMetaData() async {
-    AudioMetadata metadata = AudioMetadata();
+    metadata = AudioMetadata();
     await metadata.getAudioMetaData(widget.file.filePath);
     artist = metadata.artist.trim().isNotEmpty? metadata.artist.trim() : 'Unknown';
     album = metadata.album.trim().isNotEmpty? metadata.album.trim() : 'Unknown';
@@ -118,8 +126,23 @@ class _FileListItemState extends State<FileListItem> {
 
   void _popupMenuAction(int order) {
     switch(order) {
-      case 0:
+      case 0:   // File share
+      _fileShare(widget.file.filePath);
         break;
+      case 1:   // Set as ringtone
+        break;
+      case 2:   // File properties
+        showDialog(context: context, builder: (context) => FilePropertyDialog(metadata));
+        break;
+    }
+  }
+
+  _fileShare(String filePath) {
+    final RenderBox box = context.findRenderObject();
+    if(Platform.isAndroid) {
+      Share.shareFiles([filePath], mimeTypes: [metadata.mimeType],
+          subject: 'Share audio file with...',
+          sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
     }
   }
 }

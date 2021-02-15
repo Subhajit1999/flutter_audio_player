@@ -19,7 +19,7 @@ class StorageFileScanner {
         extensions: ["mp3","m4a"]
     );
 
-    // Getting all the files organised parent folder wise
+    // Getting all the files organised parent folder wises
     Directory prev = root;
     for(FileSystemEntity entity in files) {
       Directory dir = entity.parent;
@@ -27,7 +27,7 @@ class StorageFileScanner {
         prev = dir;
 
         List<File> filesInDir = await FileManager(root: dir).filesTree(   // Getting folder wise files
-            extensions: ["mp3"]
+            extensions: ["mp3","m4a"]
         );
         List<AudioFile> audioFiles = [];
         for(File file in filesInDir) {   // Saving file paths to a temp list

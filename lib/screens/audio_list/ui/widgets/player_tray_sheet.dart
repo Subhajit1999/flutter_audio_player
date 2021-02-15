@@ -1,5 +1,4 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_player/configs/size_config.dart';
 import 'package:flutter_audio_player/services/audio_player_service.dart';
@@ -22,25 +21,17 @@ class PlayerTraySheet extends StatefulWidget {
 }
 
 class _PlayerTraySheetState extends State<PlayerTraySheet> {
-  IconData playPauseIcon;
+  static IconData playPauseIcon = FontAwesomeIcons.solidPlayCircle;
   Duration duration;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  _getMetaData() {
-    if(AudioService.currentMediaItem!=null) {
-      Statics.metadata.getAudioMetaData(AudioService.currentMediaItem.id).then((value) {
-        setState(() {});
-      });
+  _getMetaData(MediaItem mediaItem) async {
+    if(mediaItem!=null) {
+      await Statics.metadata.getAudioMetaData(mediaItem.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    _getMetaData();
 
     return StreamBuilder<AudioState>(
       stream: audioStateStream,
@@ -52,11 +43,9 @@ class _PlayerTraySheetState extends State<PlayerTraySheet> {
         final processingState =
             Statics.playbackState?.processingState ?? AudioProcessingState.none;
         final playing = Statics.playbackState?.playing ?? false;
-        if(playPauseIcon == null) {
-          if(playbackState.playing!=null? playbackState.playing : true) playPauseIcon = FontAwesomeIcons.solidPauseCircle;
+          if(playbackState!=null? playbackState.playing : true) playPauseIcon = FontAwesomeIcons.solidPauseCircle;
           else playPauseIcon = FontAwesomeIcons.solidPlayCircle;
-        }
-
+        _getMetaData(mediaItem);
         return _body(playbackState);
       },
     );
@@ -92,7 +81,7 @@ class _PlayerTraySheetState extends State<PlayerTraySheet> {
                         // Music info
                         MarqueeWidget(
                           direction: Axis.horizontal,
-                            child: Text(Statics.metadata.audioTitle, style: Theme.of(context).textTheme.bodyText1.copyWith(
+                            child: Text(Statics.metadata.audioTitle!=null? Statics.metadata.audioTitle : 'Audio Title', style: Theme.of(context).textTheme.bodyText1.copyWith(
                                 fontSize: 1.75 * SizeConfig.textMultiplier,
                                 fontWeight: FontWeight.bold
                             ), maxLines: 1)),

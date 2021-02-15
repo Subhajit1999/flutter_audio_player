@@ -107,6 +107,12 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
   @override
+  Future<void> onSetSpeed(double speed) {
+    _audioPlayer.setSpeed(speed);
+    return super.onSetSpeed(speed);
+  }
+
+  @override
   Future<void> onSkipToPrevious() {
     skip(-1);
     return super.onSkipToPrevious();
@@ -135,29 +141,6 @@ class AudioPlayerTask extends BackgroundAudioTask {
   }
 
   @override
-  Future<void> onSkipToQueueItem(String mediaId) {
-    MediaItem mediaItem;
-    for(MediaItem _mediaItem in _queue) {
-      if(_mediaItem.id == mediaId) mediaItem = _mediaItem;
-    }
-    int index = _queue.indexOf(mediaItem);
-    return super.onSkipToQueueItem(mediaId);
-  }
-
-  // @override
-  // Future onCustomAction(String name, arguments) {
-  //   switch(name) {
-  //     case 'skipToPosition':  // Skipping to specific position
-  //       int index = arguments;
-  //       print('skipping to position: $index');
-  //       int offset = index - _queueIndex;
-  //       skip(offset);
-  //       break;
-  //   }
-  //   return super.onCustomAction(name, arguments);
-  // }
-
-  @override
   Future<void> onStop() async {
     _queue.clear();
     await _audioPlayer.stop();
@@ -165,6 +148,12 @@ class AudioPlayerTask extends BackgroundAudioTask {
     _playerStateSubscription.cancel();
     _eventSubscription.cancel();
     return super.onStop();
+  }
+
+  @override
+  Future<void> onSetRepeatMode(AudioServiceRepeatMode repeatMode) {
+    // Looping logic will be added here
+    return super.onSetRepeatMode(repeatMode);
   }
 
   @override

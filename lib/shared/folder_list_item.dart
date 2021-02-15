@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_player/configs/size_config.dart';
 import 'package:flutter_audio_player/models/storage_file_system.dart';
-import 'package:flutter_audio_player/theme/colors.dart';
 import 'package:flutter_audio_player/utils/static.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -57,22 +56,16 @@ class _FolderItemState extends State<FolderItem> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  Icon(FontAwesomeIcons.ellipsisV, size: 1.75 * SizeConfig.textMultiplier, color: AppColors.secondaryColor,),
-                  Center(
-                    child: Container(
-                      width: 23.6 * SizeConfig.widthMultiplier,
-                      height: 23.6 * SizeConfig.widthMultiplier,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: bgColor.withOpacity(0.1)
-                      ),
-                      child: Icon(FontAwesomeIcons.solidFolder, size: 4 * SizeConfig.textMultiplier, color: bgColor,),
-                    ),
+              Center(
+                child: Container(
+                  width: 23.6 * SizeConfig.widthMultiplier,
+                  height: 23.6 * SizeConfig.widthMultiplier,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: bgColor.withOpacity(0.1)
                   ),
-                ],
+                  child: Icon(FontAwesomeIcons.solidFolder, size: 4 * SizeConfig.textMultiplier, color: bgColor,),
+                ),
               ),
               SizedBox(height: SizeConfig.heightMultiplier,),
               Text(dirName, style: Theme.of(context).textTheme.bodyText1.copyWith(
